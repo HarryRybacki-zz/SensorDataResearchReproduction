@@ -1,0 +1,12 @@
+# Everything should be up and running. However, one quick command will confirm this as well as provide us with the PIDs for each process.
+
+$ jps # Should lend output akin to
+
+11305 Jps
+10887 ResourceManager
+10742 SecondaryNameNode
+10554 DataNode
+10404 NameNode
+11018 NodeManager
+
+# And with that, Hadoop is up and running.

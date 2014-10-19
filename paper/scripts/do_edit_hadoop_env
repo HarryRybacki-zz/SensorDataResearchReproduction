@@ -1,0 +1,4 @@
+# We must now tell Hadoop where Java is located on the system so update the `export JAVA_HOME...` line to match your <JAVA_HOME>. This will ensure that Hadoop knows where Java is every time it is started. E.g:
+
+# The java implementation to use.
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64

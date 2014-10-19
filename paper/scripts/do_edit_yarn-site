@@ -1,0 +1,10 @@
+# yarn-site.xml contains config properties MapReduce uses upon startup. We need to specific the auxiliary services it uses as well as what time of shuffle class to use. We'll stick to the defaults as this is a simple environment: Open the file and add the following betwee the <configuration></configuration> tags
+
+<property>
+  <name>yarn.nodemanager.aux-services</name>
+  <value>mapreduce_shuffle</value>
+</property>
+<property>
+  <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+  <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+</property>

@@ -1,0 +1,10 @@
+# mapred-site.xml specifies which framework used by MapReduce. Before modifying it, we must first copy a template withour our hadoop directory
+
+$ cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml # copy the template 
+
+# Now we can specify the yarn framework we setup in yarn-site.xml. Open mapred-site.xml and add the following between the <configuration></configuration> tags
+
+<property>
+  <name>mapreduce.framework.name</name>
+  <value>yarn</value>
+</property>

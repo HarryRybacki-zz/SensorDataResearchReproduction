@@ -1,0 +1,13 @@
+# Add Hadoop specific variables to your \textasciitilde/.bashrc file. Upon loading a new shell, these environment variables specific to and needed by Hadoop will automatically be loaded. Open up ~/.bashrc in your favorite text editor, scroll to the bottom, and add the following environment variables
+
+# Hadoop Environment Variables
+export JAVA_HOME=<JAVA_HOME> 
+export HADOOP_INSTALL=/usr/local/hadoop 
+export PATH=$PATH:$HADOOP_INSTALL/bin 
+export PATH=$PATH:$HADOOP_INSTALL/sbin 
+export HADOOP_MAPRED_HOME=$HADOOP_INSTALL 
+export HADOOP_COMMON_HOME=$HADOOP_INSTALL 
+export HADOOP_HDFS_HOME=$HADOOP_INSTALL 
+export YARN_HOME=$HADOOP_INSTALL 
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_INSTALL/lib/native 
+export HADOOP_OPTS="Djava.library.path=$HADOOP_INSTALL/lib"

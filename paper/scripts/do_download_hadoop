@@ -1,0 +1,8 @@
+# fetch the tarballed Hadoop from the Apache website
+$ wget http://apache.mirrors.lucidnetworks.net/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz 
+
+# uncompress and unpack the Hadoop tarball
+$ tar xfz Hadoop-2.3.0.tar.gz 
+
+# move the Hadoop install to it’s correct system location
+$ mv hadoop-2.3.0 /usr/local/hadoop 

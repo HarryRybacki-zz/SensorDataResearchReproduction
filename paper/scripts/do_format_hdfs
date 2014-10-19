@@ -1,0 +1,18 @@
+# With our configuration files set up we are ready to format the HDFS so that we can start our dfs.
+
+$ hdfs namenode -format
+
+# A few notes: First, only run this command successfully once. Running it subsequent times will format (destroy) any data your HDFS is storing. Second, you will see a lot of output from this command. Take note of the exit code; if all was successfull it should be 0 as in the example output below.
+
+root@hadoopbox:~# hdfs namenode -format
+14/09/11 21:32:20 INFO namenode.NameNode: STARTUP_MSG: 
+/************************************************************
+
+...ouput cut out for brevity
+
+14/09/11 21:32:21 INFO namenode.NNStorageRetentionManager: Going to retain 1 images with txid >= 0
+14/09/11 21:32:21 INFO util.ExitUtil: Exiting with status 0 # This is what we want to see
+14/09/11 21:32:21 INFO namenode.NameNode: SHUTDOWN_MSG: 
+/************************************************************
+SHUTDOWN_MSG: Shutting down NameNode at hadoopbox/127.0.1.1
+************************************************************/

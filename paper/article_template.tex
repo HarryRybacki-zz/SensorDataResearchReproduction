@@ -1,0 +1,411 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Journal Article
+% LaTeX Template
+% Version 1.3 (9/9/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside]{article}
+
+\usepackage{lipsum} % Package to generate dummy text throughout this template
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage{graphicx} % For loading graphics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage{multicol} % Used for the two-column layout of the document
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{Senior Project $\bullet$ CSC490 $\bullet$ Fall 2014} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Sensor Anomaly Detection in Wireless Sensor Networks, Reproducing and Expanding Upon Previous Work}} % Article title
+
+\author{
+\large
+\textsc{Harry Rybacki}\\[2mm] % Your name
+\normalsize University of North Carolina at Greensboro \\ % Your institution
+\normalsize \href{mailto:hrybacki@gmail.com}{hrybacki@gmail.com} % Your email address
+\vspace{-5mm}
+}
+\date{}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Insert title
+
+\thispagestyle{fancy} % All pages have headers and footers
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT (Project Definition
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+
+\noindent As the number of Wireless Sensor Networks (WSNs) continues to grow with uses monitoring, tracking, and controlling a wide variety of industry and private applications so does the need to accurately and efficiently detect anomalies in the sensor data they accumulate. A wide variety of statistical-based, clustering-based, classification-based, and nearest-neighbor methods have been proposed[2]. Dr. Shan Suthaharan's work using post-data-transformation, ellipsoid boundary estimation has proved to be incredibly accurate while also increasing efficiency when compared to similar ellipsoid boundary estimation based anomaly detection algorithms (ADAs)[1]. There is however, room to decrease the computational complexity of the transformations involved in Dr. Shan's ADA. The goals of this project are to firstly transform Dr. Suthaharan's previous work into an easily reproducible environment using Python and IPython notebooks and secondly to create a solid performance benchmark which an be used in future work that will decrease the complexity of Dr. Suthaharan's ADA while maintaining approximately the same level of accuracy.
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+\begin{multicols}{2} % Two-column layout throughout the main article text
+
+%------------------------------
+%	PROJECT Introduction
+%------------------------------
+\section{Introduction}
+
+\lettrine[nindent=0em,lines=3]{I} n order to accurately and efficiently detect anomalies from sensor data within Wireless Sensor Networks (WSNs), we have decided to reproduce and enhance directly related, previous research performed by Dr. Shan Suthaharan.
+
+DESCRIBE SECTIONS HERE
+
+\subsection{Document Conventions}
+\textit{Italicized words} represent common terms used throughout the requirements document which may be looked up in Appendix A: Glossary.
+
+\subsection{Project Vision and Scope}
+This primary goal of this research project is to translate previous research conducted by Dr. Shan Suthaharan into an easily reproducible environment, using \textit{Python} and \textit{IPython Notebooks}, thereby permitting any researcher who desires to easily reproduce his experiments. The secondary goal is to create a solid performance benchmark, using the aforementioned technologies, that will act as the stepping stones for further research into making the transformation, sensor data boundary modeling, and inverse transformation modules of the algorithm more efficient. Time permitting, the tertiary goal is to begin optimizing aforementioned algorithm modules and creating comparative benchmarks to assist follow up research.
+
+\subsection{Stakeholders}
+The stakeholders for this research project include Dr. Shan Suthaharan, other researchers within this and complementary fields, as well as individuals, groups, and organizations whom either currently or in the future will setup, maintain, or use \textit{WSNs}.
+
+\subsection{Assumptions and Constraints}
+Although the original implementation was written in \textit{MATLAB}, the reproduction will be written in \textit{Python} and composed in \textit{IPython Notebooks} to ensure the easiest form of experimentation and reproduction possible.
+
+%------------------------------
+%	PROJECT Requirements
+%------------------------------
+\section{Requirements}
+
+\subsection{Functional Requirements}
+\begin{enumerate}
+	\item Read \textit{WSN} Data:
+		\begin{itemize}
+			\item Researchers require the ability to read \textit{WSN} data from a variety of sources. To accommodate this, a standard schema should be outlined for easy of integration and processing of data after any data migrations deemed necessary.
+		\end{itemize}
+	\item Process WSN Data:
+		\begin{enumerate}
+			\item Perform Transformation on \textit{WSN} Data:
+				\begin{itemize}
+					\item After reading the data, measurements need to be determined and transformed into a Gaussian distribution field.
+				\end{itemize}
+			\item Perform Boundary Modeling on \textit{WSN} Data:
+				\begin{itemize}
+					\item After being transformed, boundaries must be determined and true measurements segregated from others.
+				\end{itemize}
+			\item Perform Inverse Transformation on \textit{WSN} Data:
+				\begin{itemize}
+					\item Finally, \textit{anomalies} should be determined and traced back to their originating sensors.
+				\end{itemize}
+		\end{enumerate}
+	\item Visually Model \textit{WSN} Data:
+		\begin{itemize}
+			\item Researches require the ability to take the resulting data from the processing phase and model it visually allowing them to identify true measurements from anomalies.
+		\end{itemize}
+	\item Benchmark Performance of \textit{ADA}:
+		\begin{itemize}
+			\item In order to increase detection \textit{efficiency} while maintaining detection \textit{effectiveness}, researchers require an easy-to-use benchmarking tool. These benchmarks provide a definitive method of quantifying improvements as well as track progress of experimentation.
+		\end{itemize}
+	\item Allow Easy Modification and Re-execution of \textit{ADA}:
+		\begin{itemize}
+			\item Researches require a simple environment for re-executing the read, process, visually model, and benchmark phases. This environment will encourage experimentation as well as encourage an iterative development and enhancement workflow.
+		\end{itemize}
+\end{enumerate}
+
+\subsection{Non-functional Requirements}
+\begin{enumerate}
+	\item Programming Languages:
+		\begin{itemize}
+        			\item Python
+			\item Bash or related scripting language as needed
+		\end{itemize}
+	\item Development Environment:
+		\begin{itemize}
+        			\item OSX 10.9
+        			\item VIM
+        			\item \textit{IPython Notebooks}
+        			\item Firefox/Chrome
+		\end{itemize}
+	\item Performance Requirements:
+        		\begin{itemize}
+			\item As outlined in [2], the ADA created by Dr. Suthaharan has a very high \textit{detection effectiveness}. However, despite making advances in \textit{detection efficiency}[1] when compared to other \textit{ADAs}, the transformation is still very computationally complex; this is the area this research project aims to quantify in preparation for follow up research.
+		\end{itemize}
+\end{enumerate}
+
+\subsection{Security Requirements}
+None.
+
+\subsection{Software Quality Attributes}
+Two metrics are used to determine the quality of an \textit{Anomaly Detection Algorithm (ADA}): \textit{Detection effectiveness} and \textit{Detection efficiency}. These metrics will be used to determine the quality of Dr. Suthaharan's \textit{ADA} as it is reproduced throughout this research project. As outlined in [2], the \textit{ADA} created by Dr. Suthaharan has a very high \textit{detection effectiveness}. However, despite making advances in \textit{detection efficiency}[1] when compared to other \textit{ADAs}, the transformation is still very computationally complex; this is the area this research project aims to quantify in preparation for follow up research.
+
+%------------------------------
+%	Specifications
+%------------------------------
+
+\end{multicols}
+
+\section{Specifications}
+
+\begin{table}[H]
+\caption{Project Specifications}
+\centering
+\begin{tabular}{llr}
+\toprule
+\textbf{Functional Requirement} & \textbf{Sub-Requirement} & \textbf{Priority} \\
+\midrule
+
+Process WSN						&  											& \textbf{Essential} 	\\
+Data								& Perform transformation on WSN data                          	& \textbf{Essential}	\\
+                                                			& Perform boundary modeling on WSN data                      & \textbf{Essential} 	\\
+                                                			& Perform inverse transformation on WSN data                 & \textbf{Essential}	\\
+Visually Model			         		&                                                             				& \textbf{Essential}	\\
+Resulting Data                          			& Create/Display plot of initial measurements         		& \textbf{Essential} 	\\
+                                               			& "" "" post-processing measurements 				& \textbf{Essential} 	\\
+                                                			& "" "" highlighting true measurements  				& \textbf{Essential} 	\\
+                                                			& "" "" datapoint relation with source sensors 			& Desirable	 	\\
+Benchmark						&                                                            		 		& \textbf{Essential} 	\\
+Performance                            			& Separate modules into blocks that can be re-executed   & \textbf{Essential}	\\
+of ADA                                      			& Perform benchmarking of individual blocks                   	& \textbf{Essential}	\\
+                                                			& Output benchmark results of individual blocks               	& \textbf{Essential}	\\
+                                                			& Output composite benchmark results of all blocks           & Desirable		\\
+Modification and 					&                                                             				& Desirable     		\\
+Re-execution of ADA             			& Allow Easy Modification and Re-execution of ADA          & \textbf{Essential}	\\
+                                                			& Perform re-execution on individual blocks                   	& \textbf{Essential} 	\\
+                                                			& Perform re-execution on all blocks                          		& Desirable 		\\
+
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{multicols}{2} % Two-column layout throughout the main article text
+
+
+%------------------------------
+%	Feasibility Study
+%------------------------------
+\section{Feasibility Study}
+
+TBA
+
+%------------------------------
+%	Process Model Drafts
+%------------------------------
+
+\section{Process Models - Drafts}
+
+Reference Appendix B, Figures~\ref{fig:process_model_overview_draft} -~\ref{fig:process_model_modify_or_recreae_ada_draft}.
+
+%------------------------------
+%	Data Model Drafts
+%------------------------------
+
+\section{Data Models - Drafts}
+
+Reference Appendix B, Figure~\ref{fig:data_model_overview_draft}.
+
+%------------------------------
+%	Data Dictionary
+%------------------------------
+
+\section{Data Dictionary}
+
+\begin{itemize}
+	\item \textbf{sensor\_data\_storage}: Database or file storing \textit{WSN} sensor data.	
+	\item \textbf{true\_measurements}: Unformatted dictionary of original measurement data taken from sensor\_data\_storage.
+	\item \textbf{true\_measurement\_tuples}: Formatted dictionary of tuples mapping sensor data to humidity and temperature data.
+	\item \textbf{randomized\_measurement\_tuples}: Randomized dictionary of tuples mapping sensor data to humidity and temperature data.
+	\item \textbf{difference\_tuples}: Intermediate dictionary of tuples created from randomized\_measurement\_tuples and used to calculate ellipsoid\_data.
+	\item \textbf{ellipsoid\_data}: Data set used for calculating and plotting scatter plot.
+	\item \textbf{lookup\_table}: Table used mapping difference\_tuples data points to their true\_measurement counterpart.
+	\item \textbf{transformed\_measurement\_to\_orig\_sensor}: Map of transformed data points to sensor that original detected them.
+	\item \textbf{code\_blocks}: Blocks of code within \textit{IPython Notebook}.
+	\item \textbf{block\_benchmarks}: Set of performance benchmarks for each code block within the \textit{IPython Notebook}
+	\item \textbf{benchmark\_report}: Summary of performance benchmarks from all code blocks.
+	\item \textbf{orig\_data\_scatterplot}: Scatterplot of original data.
+	\item \textbf{transformed\_data\_scatterplot}: Scatterplot ellipsoid and anomalies from transformed data.
+\end{itemize}
+
+%------------------------------
+%	Revised Data Model 
+%------------------------------
+
+\section{Data Models - Revised}
+Reference Appendix B, Figure~\ref{fig:revisedDataflowDiagram}.
+
+%------------------------------
+%	ACKNOWLEDGEMENTS
+%------------------------------
+
+\section{Acknowledgement}
+
+\begin{enumerate}
+	\item Add Dr. Shan Suthaharan's Info
+	\item Add Sponsor's info
+\end{enumerate}
+
+%----------------------------------------------------------------------------------------
+%	REFERENCE LIST
+%----------------------------------------------------------------------------------------
+
+\begin{thebibliography}{99} % Bibliography - this is intentionally simple in this template
+
+\bibitem[Figueredo and Wolf, 2009]{Figueredo:2009dg}
+Figueredo, A.~J. and Wolf, P. S.~A. (2009).
+\newblock Assortative pairing and life history strategy - a cross-cultural
+  study.
+\newblock {\em Human Nature}, 20:317--330.
+ 
+ \bibitem[Suthaharan]{Suthaharan:2010dg}
+ Suthaharan, S. (2010).
+ \newblock Sensor Data Boundary Estimation for Anomaly Detection in Wireless Sensor Networks.
+ 
+ \bibitem[Rassam, Zainal, and Maarof, 2013]{Rassam:2013dg}
+ Rassam, M., Zainal, A., \& Maarof, M. (2013).
+ \newblock Advancements of Data Anomaly Detection Research in Wireless Sensor Networks: A Survey and Open Issues. Sensors.
+ 
+ \bibitem[Hodge, Austin, 2004]{Hodge:2004dg}
+ Hodge, V., \& Austin, J. (2004).
+ \newblock A survey of outlier detection methodoligies.
+ \newblock {\em Artificial Intelligence}, 22:85-126.
+ 
+ \bibitem[Chandola, Banerjee, Kumar, 2009]{Chandola:2009dg}
+ Chandola, V., Banerjee, A., \& Kumar, V. (2009).
+ \newblock Anomaly detection: A Survey.
+ \newblock {\em ACM Computing Surveys}.
+ 
+ \bibitem[Zhang, Meratnia, Havings, 2010]{Zhang:2009dg}
+ Zhang, Y., Meratnia, N., \& Havinga, P. (2010).
+ \newblock Outlier Detection Techniques for Wireless Sensor Networks: A Survey.
+ \newblock {\em IEEE Communications Surveys \& Tutorials}, 159-170.
+ 
+\end{thebibliography}
+
+%----------------------------------------------------------------------------------------
+
+\end{multicols}
+
+%----------------------------------------------------------------------------------------
+%	Appendix A: Glossary of Terms
+%----------------------------------------------------------------------------------------
+
+\section{Appendix A: Glossary of Terms}
+
+\begin{itemize}
+	\item \textbf{Anomaly}: An anomaly is an observation that seems to be inconsistent with the rest of a dataset[3] or the process of finding data patterns that deviate from expected behavior[4].
+	\item \textbf{Anomaly Detection Algorithm (ADA)}: An algorithm used to detect anomalies.
+	\item \textbf{Detection effectiveness of an ADA}: The detection accuracy, detection rate, and number of false alarms of an ADA[5].
+	\item \textbf{Detection efficiency of an ADA}: The energy consumption and memory utilization of an ADA[2].
+	\item \textbf{MATLAB}: MATLAB (matrix laboratory) is a multi-paradigm numerical computing environment and fourth-generation programming language. Developed by MathWorks, MATLAB allows matrix manipulations, plotting of functions and data, implementation of algorithms, creation of user interfaces, and interfacing with programs written in other languages, including C, C++, Java, and Fortran.
+	\item \textbf{Python}: Python is a widely used general-purpose, high-level programming language. Its design philosophy emphasizes code readability, and its syntax allows programmers to express concepts in fewer lines of code than would be possible in languages such as C.
+	\item \textbf{IPython}: IPython is a command shell for interactive computing in multiple programming languages, originally developed for the Python programming language, that offers enhanced introspection, rich media, additional shell syntax, tab completion, and rich history.
+	\item \textbf{IPython Notebook}: The IPython Notebook is a web-based interactive computational environment where you can combine code execution, text, mathematics, plots and rich media into a single document.
+	\item \textbf{Wireless Sensor Network (WSN)}: A wireless sensor network (WSN) of spatially distributed autonomous sensors to monitor physical or environmental conditions, such as temperature, sound, pressure, etc. and to cooperatively pass their data through the network to a main location.
+
+\end{itemize}
+
+%----------------------------------------------------------------------------------------
+%	Appendix B: Figures
+%----------------------------------------------------------------------------------------
+
+\section{Appendix B: Figures}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=7cm]{"images/process_model_overview"}
+    \caption{Process Model Overview - Draft}
+    \label{fig:process_model_overview_draft}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+	\includegraphics[width=0.7\textwidth]{"images/process_model_read_input_1_"}
+    \caption{Process Model - Read Input - Draft}
+    \label{fig:process_model_input_draft}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+	\includegraphics[width=0.7\textwidth]{"images/process_model_process_data_2_"}
+    \caption{Process Model - Process Data - Draft}
+    \label{fig:process_model_process_data_draft}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+	\includegraphics[width=0.7\textwidth]{"images/process_model_benchmark_ada_3_"}
+    \caption{Process Model - Benchmark ADA - Draft}
+    \label{fig:process_model_benchmark_ada_draft}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+	\includegraphics[width=0.7\textwidth]{"images/process_model_visually_model_data_4_"}
+    \caption{Process Model - Visually Model Data - Draft}
+    \label{fig:process_model_visually_model_data_draft}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+	\includegraphics[width=0.7\textwidth]{"images/process_model_modify_or_re_execute_ada_5_"}
+    \caption{Process Model - Modify or Re-execute ADA - Draft}
+    \label{fig:process_model_modify_or_recreae_ada_draft}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+	\includegraphics[width=0.7\textwidth]{"images/data_model_overview"}
+    \caption{Data Model Overview - Draft}
+    \label{fig:data_model_overview_draft}
+\end{figure}
+
+\begin{figure}[h]
+\centerline{\includegraphics[width=.7\textwidth, height=600px]{"images/data_model_revised"}}
+\caption{Revised dataflow digram.}
+  \label{fig:revisedDataflowDiagram}
+\end{figure}
+
+\end{document}

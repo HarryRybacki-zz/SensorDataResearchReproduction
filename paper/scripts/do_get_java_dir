@@ -1,0 +1,7 @@
+# Display your java installation directory with output akin to:
+$ update-alternatives –config java 
+
+There is only one alternative in link group java (providing /usr/bin/java): /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java 
+
+# <JAVA_HOME> will be everything in the path preceding /jre/bin/java
+# <JAVA_HOME> = /usr/lib/jvm/java-7-openjdk-amd64
