@@ -1,5 +1,3 @@
-import random
-
 import helpers
 
 """
@@ -34,6 +32,8 @@ differences = helpers.generate_differences(shuffled_measurements)
 
 
 # 1B - Ellipsoid Boundary Modeling
+print len(differences['11'])
+print len(shuffled_measurements['11'])
 
 # 1C - Inverse Transformation
 

@@ -55,7 +55,7 @@ def generate_differences(dictionary):
     differences = {}
 
     for sensor in dictionary:
-        for index in range(len(dictionary) - 1):
+        for index in range(len(dictionary[sensor]) - 1):
             difference_tuple =  (
                 dictionary[sensor][index + 1][0] - dictionary[sensor][index][0],
                 dictionary[sensor][index + 1][1] - dictionary[sensor][index][1]
