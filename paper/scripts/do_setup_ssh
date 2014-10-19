@@ -1,7 +1,0 @@
-# Hadoop uses SSH to access its nodes and setting up SSH keys ahead of time will prevent tedious password entry later on.
-
-# create an ssh key using the RSA algorithm with an empty passphraseIf you are prompted for a filename just accept the default by hitting enter unless you have a specific name convention you would like to follow
-$ ssh-keygen -t rsa –P ''
-
-# read and output the new key into the authorized ssh keys for this system.
-$ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys

@@ -1,3 +1,0 @@
-# Now, these variables won't be loaded until the next time a shell is created so you must manually source the bashrc file
-
-$ source ~/.bashrc	

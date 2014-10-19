@@ -1,6 +1,0 @@
-# core-site.xml contains config properties Hadoop uses upon startup. We will specify where the hdfs web server should run by adding the following within the <configuration></configuration> tags
-
-<property>
-  <name>fs.default.name</name>
-  <value>hdfs://localhost:9000</value>
-</property>

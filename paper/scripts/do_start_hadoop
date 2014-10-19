@@ -1,6 +1,0 @@
-# Now that everything is set up and the filesystem has been formatted we can start Hadoop by executing the following commands
-
-# Note: you will be prompted to enter 'yes' twice after executing the first command. These prompts are merely adding the ssh key to known_hosts and shouldn't pop up again.
-
-$ start-dfs.sh
-$ start-yarn.sh
