@@ -46,13 +46,15 @@ def randomize_readings(dictionary):
 
 def generate_differences(dictionary):
     """Generates a dictionary that maps each sensor to a list of length n and containing tuples of temp. and humidity
-    data to a new list of tuples size n-1 where each tuple is the differnce between the original list at index n+1 and
+    data to a new list of tuples size n-1 where each tuple is the difference between the original list at index n+1 and
     the original list at index n
 
-    :param dictionary: dictionary mapping sensors to original tuples of temp. and humidty data.
-    :return: dictionary mapping sensors to new list of tuple differences
+    :param dictionary: dictionary mapping sensors to original tuples of temp. and humidity data.
+    :return: tuple containing dictionary mapping sensors to new list of tuple differences and a lookup table containing
+    back references to the raw measurements used to calculate the new measurements in the differences dict
     """
     differences = {}
+    lookup_table = {}
 
     for sensor in dictionary:
         for index in range(len(dictionary[sensor]) - 1):
@@ -65,5 +67,32 @@ def generate_differences(dictionary):
             else:
                 differences[sensor] = [difference_tuple]
 
-    return differences
+    return (differences, lookup_table)
 
+def calculate_humidity_mean(sensor_readings):
+    """Calculates the mean humidity of a given sensors list of readings
+
+    :param list: list of tuples representing sensor readings (humidity, temp.)
+    :return: mean
+    """
+
+    total_count = 0
+
+    for index, reading in enumerate(sensor_readings):
+        total_count = total_count + reading[0] # humidity portion of tuple
+
+    return total_count / len(sensor_readings)
+
+def calculate_temp_mean(sensor_readings):
+    """Calculates the mean temp. of a given sensors list of readings
+
+    :param list: list of tuples representing sensor readings (humidity, temp.)
+    :return: mean
+    """
+
+    total_count = 0
+
+    for index, reading in enumerate(sensor_readings):
+        total_count = total_count + reading[1] # temp. portion of tuple
+
+    return total_count / len(sensor_readings)

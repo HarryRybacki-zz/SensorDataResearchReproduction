@@ -39,5 +39,17 @@ class testHelpers(unittest.TestCase):
             '3': [(8, 2), (-3, 4), (-2, -2)],
             '4': [(-5, 0), (0, 5), (1, 0)]
         }
-        assert helpers.generate_differences(self.original_dict) == expected_differences
+        differences, lookup_table = helpers.generate_differences(self.original_dict)
+        assert differences == expected_differences
 
+    def test_calculate_humidity_mean(self):
+
+        expected_mean = 3
+
+        assert helpers.calculate_humidity_mean(self.original_dict['1']) == expected_mean
+
+    def test_calculate_temp_mean(self):
+
+        expected_mean = (19 / 4)
+
+        assert helpers.calculate_temp_mean(self.original_dict['1']) == expected_mean
