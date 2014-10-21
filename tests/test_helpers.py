@@ -53,3 +53,27 @@ class testHelpers(unittest.TestCase):
         expected_mean = (19 / 4)
 
         assert helpers.calculate_temp_mean(self.original_dict['1']) == expected_mean
+
+     # TODO(hrybacki)
+    def test_genererate_lookup_table(self):
+        pass
+
+    # TODO(hrybacki)
+    def test_model_ellipsoid_of_single_sensor(self):
+        pass
+
+    # TODO(hrybacki)
+    def test_model_region_aggregate(self):
+        pass
+
+    # TODO(hrybacki)
+    def test_model_inverse_transformation(self):
+        pass
+
+    # TODO(hrybacki)
+    def test_model_is_anomaly_true(self):
+        pass
+
+    # TODO(hrybacki)
+    def test_model_is_anomaly_false(self):
+        pass
