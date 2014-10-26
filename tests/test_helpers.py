@@ -54,7 +54,59 @@ class testHelpers(unittest.TestCase):
 
         assert helpers.calculate_temp_mean(self.original_dict['1']) == expected_mean
 
-     # TODO(hrybacki)
+
+    def test_calculate_mean(self):
+
+        assert helpers.calculate_mean([1, 2, 3]) == 2.0
+
+    def test_calculate_std_dev(self):
+
+        expected_sd = (1.8708286933869707, 0.82915619758884995)
+        assert helpers.calculate_std_dev(self.original_dict['1']) == expected_sd
+
+    # TODO(hrybacki): unfinished
+    def test_calculate_dist(self):
+
+        # FIXME: Random seed 11 produces a positive distance
+        fixed_seed = 11
+        random.seed(fixed_seed)
+
+        shuffled_measurements = helpers.randomize_readings(self.original_dict)
+
+        differences, lookup_table = helpers.generate_differences(shuffled_measurements)
+
+        sigma_temp, sigma_humidity = helpers.calculate_std_dev(differences['1'])
+
+        p1 = differences['1'][0]
+        p2 = differences['1'][1]
+
+        dist = helpers.calculate_dist(p1, p2, sigma_temp, sigma_humidity)
+
+        '''
+        print differences
+        print sigma_temp
+        print sigma_humidity
+        print p1
+        print p2
+        print dist
+        '''
+        assert True
+
+    # TODO(hrybacki): unfinished
+    def test_calculate_ellipsoid_orientation(self):
+
+        fixed_seed = 11
+        random.seed(fixed_seed)
+
+        shuffled_measurements = helpers.randomize_readings(self.original_dict)
+        differences, lookup_table = helpers.generate_differences(shuffled_measurements)
+
+        helpers.calculate_ellipsoid_orientation(differences['1'])
+
+        assert True
+
+
+    # TODO(hrybacki)
     def test_genererate_lookup_table(self):
         pass
 

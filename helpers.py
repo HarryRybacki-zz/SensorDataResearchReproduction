@@ -1,3 +1,6 @@
+import numpy
+import math
+
 """Helper classes."""
 
 def read_ibrl_data(data_file):
@@ -69,10 +72,79 @@ def generate_differences(dictionary):
 
     return (differences, lookup_table)
 
+def calculate_mean(list):
+    """Calculate the mean of a list of numbers"""
+    return sum(list) * 1.0 / len(list)
+
+def calculate_std_dev(sensor_readings):
+    """
+    :param list: list of tuples representing sensor readings (temp., humidity)
+    :return: tuple of population std. dev. (sd of temp, sd of humidity)
+    """
+    temperature_readings = [reading[0] for reading in sensor_readings]
+    humidity_readings = [reading[1] for reading in sensor_readings]
+
+    return (numpy.std(temperature_readings), numpy.std(humidity_readings))
+
+# FIXME: Are we picking the correct values here? Why are the sigmas
+# FIXME: 'swapped' in the calculations?
+def calculate_dist(point_one, point_two, sigma_one, sigma_two):
+    """ Calculates the distance between two points
+    d(pi, pj) = (h1-h2)^2*sigma_one+(t1-t2)^2*sigma_two + 2*(h1-h2)(t1-t2)*sigma_one*sigma_two
+    :param point_one: first tuple (temp., humidity)
+    :param point_two: second tuple (temp., humidity)
+    :param sigma_one: std. dev. of temperature readings
+    :param sigma_two: std. dev. of humidity readings
+    :return: distance
+    """
+    t1, h1 = point_one
+    t2, h2 = point_two
+
+    return math.fabs(math.pow(h1-h2, 2)*sigma_one + math.pow(t1-t2, 2)*sigma_two + 2*(h1-h2)*(t1-t2)*sigma_one*sigma_two)
+
+def calculate_ellipsoid_orientation(sensor_readings):
+    """
+    :param sensor_readings: list of tuples (temp., humidity) representing readings
+    :return: float, theta of ellipsoid orientation
+    """
+
+    n = len(sensor_readings)
+    temperature_readings = [reading[0] for reading in sensor_readings]
+    humidity_readings = [reading[1] for reading in sensor_readings]
+
+    #FIXME(hrybacki): Come up with a better way of breaking this components down
+    #FIXME(hrybacki): Shouldwe be getting negative values anywhere in here?
+
+    # part_one
+    part_one_multiplicands = [temperature_readings[i]*humidity_readings[i] for i in range(n)]
+    part_one_value = n * sum(part_one_multiplicands)
+
+    # part two
+    part_two_value = sum(temperature_readings) * sum(humidity_readings)
+
+    # part three
+    part_three_value = n * sum([math.pow(temp, 2) for temp in temperature_readings])
+
+    # part four
+    part_four_value = math.pow(sum(temperature_readings), 2)
+
+    # arctan(theta)
+    arctan_theta = (part_one_value - part_two_value) / (part_three_value - part_four_value)
+
+    print "Temp. readings: %s" % temperature_readings
+    print "Humidity readings: %s" % humidity_readings
+
+    print "Part one: %s" % part_one_value
+    print "Part two: %s" % part_two_value
+    print "Part three: %s" % part_three_value
+    print "Part four: %s" % part_four_value
+    print "tan(theta) = %s" % arctan_theta
+
+
 def calculate_humidity_mean(sensor_readings):
     """Calculates the mean humidity of a given sensors list of readings
 
-    :param list: list of tuples representing sensor readings (humidity, temp.)
+    :param list: list of tuples representing sensor readings (temp., humidity)
     :return: mean
     """
 
