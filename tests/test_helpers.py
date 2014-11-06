@@ -106,6 +106,11 @@ class testHelpers(unittest.TestCase):
         assert True
 
 
+    def test_get_min_max_temp(self):
+
+        assert helpers.get_min_max_temp(self.original_dict['1']) == (1, 6)
+
+
     # TODO(hrybacki)
     def test_genererate_lookup_table(self):
         pass

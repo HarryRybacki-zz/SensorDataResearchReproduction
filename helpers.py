@@ -15,20 +15,20 @@ def read_ibrl_data(data_file):
         bad_count = 0
         measurements = {}
         for line in fp:
+
             row_count = row_count + 1
             line = line.strip() # remove edge whitespace
-            tokens = line.split() # segregate each section
-            #if len(tokens) != 8:
-            #    pass
+            tokens = line.split(',') # segregate each section
+
             try:
-                if len(tokens) != 8: # dump incomplete sensor readings
+                if len(tokens) != 5: # dump incomplete sensor readings
                     bad_count = bad_count + 1
                 elif tokens[3] in measurements: # if sensor id is in the sensor dict
                     # append new temp/humidity tuple
-                    measurements[tokens[3]].append((float(tokens[4]), float(tokens[4])))
+                    measurements[tokens[3]].append((float(tokens[0]), float(tokens[1])))
                 else:
                     # else create a new entry in sensor_dict and add it's respective sensor data
-                    measurements[tokens[3]] = [(float(tokens[4]), float(tokens[5]))]
+                    measurements[tokens[3]] = [(float(tokens[0]), float(tokens[1]))]
             except Exception as e:
                 raise e
         print "Total rows: %s" % row_count
@@ -88,6 +88,7 @@ def calculate_std_dev(sensor_readings):
 
 # FIXME: Are we picking the correct values here? Why are the sigmas
 # FIXME: 'swapped' in the calculations?
+# FIXME: Flip the h's and t's
 def calculate_dist(point_one, point_two, sigma_one, sigma_two):
     """ Calculates the distance between two points
     d(pi, pj) = (h1-h2)^2*sigma_one+(t1-t2)^2*sigma_two + 2*(h1-h2)(t1-t2)*sigma_one*sigma_two
@@ -129,8 +130,8 @@ def calculate_ellipsoid_orientation(sensor_readings):
     part_four_value = math.pow(sum(temperature_readings), 2)
 
     # arctan(theta)
-    arctan_theta = (part_one_value - part_two_value) / (part_three_value - part_four_value)
-
+    tan_theta = (part_one_value - part_two_value) / (part_three_value - part_four_value)
+    """
     print "Temp. readings: %s" % temperature_readings
     print "Humidity readings: %s" % humidity_readings
 
@@ -138,7 +139,9 @@ def calculate_ellipsoid_orientation(sensor_readings):
     print "Part two: %s" % part_two_value
     print "Part three: %s" % part_three_value
     print "Part four: %s" % part_four_value
-    print "tan(theta) = %s" % arctan_theta
+    print "tan(theta) = %s" % tan_theta
+    """
+    return math.atan(tan_theta)
 
 
 def calculate_humidity_mean(sensor_readings):
@@ -168,6 +171,21 @@ def calculate_temp_mean(sensor_readings):
         total_count = total_count + reading[1] # temp. portion of tuple
 
     return total_count / len(sensor_readings)
+
+def get_min_max_temp(sensor_readings):
+    """
+    :param sensor_readings: list of tuples representing temp and humidity readings
+    :return: tuple of the minimum and maximum temps from a list of readings
+    """
+    min_temp = 999
+    max_temp = -999
+    for reading in sensor_readings:
+        if reading[0] < min_temp:
+            min_temp = reading[0]
+        elif reading[0] > max_temp:
+            max_temp = reading[0]
+
+    return (int(min_temp), int(max_temp))
 
 def model_ellipsoid(sensor_data):
     """Generates and returns a three tuple of ellipsoid parameter for a single sensor
