@@ -39,7 +39,7 @@ def randomize_readings(dictionary):
     """For each list mapped to a sensor, randomize the tuples within and returns the resulting dictionary
 
     :param dictionary: Dictionary of sensors whose lists will be shuffled
-    :return: Dictionary mapping sensors to randomized list of temp. and humidity readings
+    :return: Dictionary mapping sensors to randomized lists of temp. and humidity readings
     """
     import random
     for sensor in dictionary:
@@ -71,6 +71,32 @@ def generate_differences(dictionary):
                 differences[sensor] = [difference_tuple]
 
     return (differences, lookup_table)
+
+def standardize_readings(sensor_readings):
+    """Standardize sensor readings
+    
+    :param dictionary: dictionary of sensors whose readings need to be normalized
+    :return: dictionary mapping sensors to normalized lists of temp .and humidity readings
+    """
+    for sensor, readings in sensor_readings.iteritems():
+        temp_readings = [reading[0] for reading in readings]
+        humidity_readings = [reading[1] for reading in readings]
+
+        temp_mean = calculate_mean(temp_readings)
+        humidity_mean = calculate_mean(humidity_readings)
+
+        temp_sd, humidity_sd = calculate_std_dev(readings)
+
+        standardized_readings = []
+
+        for reading in readings:
+            standardized_readings.append(
+                (((reading[0] - temp_mean) / temp_sd),
+                 ((reading[1] - humidity_mean) / humidity_sd)))
+
+        sensor_readings[sensor] = standardized_readings
+
+    return sensor_readings
 
 def calculate_mean(list):
     """Calculate the mean of a list of numbers"""
