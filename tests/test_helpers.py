@@ -1,5 +1,6 @@
 """Test cases for helper code."""
 
+import copy
 import random
 import unittest
 
@@ -10,12 +11,27 @@ class testHelpers(unittest.TestCase):
 
     def setUp(self):
 
-        self.original_dict = original_dict = {
+        # Original test daa dict "Sensor: [(temp, humid), ...]"
+        self.original_dict = {
             '1': [(1, 5), (3, 5), (2, 4), (6, 3)],
             '2': [(3, 3), (8, 1), (3, 8), (1, 6)],
             '3': [(1, 3), (9, 5), (6, 9), (4, 7)],
             '4': [(8, 4), (3, 4), (3, 9), (4, 9)]
         }
+
+        # Permuted version of original measurements
+        fixed_seed = 1 # Fix seed so we have deterministic 'shuffled' readings
+        random.seed(fixed_seed)
+        self.shuffled_dict = copy.deepcopy(self.original_dict) # shuffle is an in place function
+        helpers.randomize_readings(self.shuffled_dict)
+
+        # Successive differences and lookup table
+        self.differences_dict, self.lookup_table = \
+            helpers.generate_differences(self.shuffled_dict)
+
+        # Standardized version of successive differences
+        self.standardized_differences = helpers.standardize_readings(
+            self.differences_dict)
 
     def test_randomize_readings(self):
 
@@ -40,6 +56,7 @@ class testHelpers(unittest.TestCase):
             '4': [(-5, 0), (0, 5), (1, 0)]
         }
         differences, lookup_table = helpers.generate_differences(self.original_dict)
+
         assert differences == expected_differences
 
     def test_calculate_humidity_mean(self):
@@ -95,21 +112,70 @@ class testHelpers(unittest.TestCase):
     # TODO(hrybacki): unfinished
     def test_calculate_ellipsoid_orientation(self):
 
-        fixed_seed = 11
-        random.seed(fixed_seed)
+        expected_theta = -0.343023940421
 
-        shuffled_measurements = helpers.randomize_readings(self.original_dict)
-        differences, lookup_table = helpers.generate_differences(shuffled_measurements)
-
-        helpers.calculate_ellipsoid_orientation(differences['1'])
-
-        assert True
-
+        self.assertAlmostEqual(expected_theta,
+                               helpers.calculate_ellipsoid_orientation(self.original_dict['1']),
+                               7)
 
     def test_get_min_max_temp(self):
 
         assert helpers.get_min_max_temp(self.original_dict['1']) == (1, 6)
 
+    def test_calc_A(self):
+
+        a = 1.7601
+        b = 4.1168
+        theta = 0.717564
+        expected_A = 0.17306
+
+        self.assertAlmostEqual(expected_A,
+                               helpers.calc_A(a, b, theta),
+                               5)
+
+    def test_calc_B(self):
+
+        a = 1.7601
+        b = 4.1168
+        temp = 3.0
+        theta = 0.717564
+        expected_B = 0.784098
+
+        self.assertAlmostEqual(expected_B,
+                               helpers.calc_B(a, b, temp, theta),
+                               5)
+
+    def test_calc_C(self):
+
+        a = 1.7601
+        b = 4.1168
+        temp = 3.0
+        theta = 0.717564
+        expected_C = 0.878646
+
+        self.assertAlmostEqual(expected_C,
+                               helpers.calc_C(a, b, temp, theta),
+                               5)
+
+    def test_calc_hi1(self):
+        A = 0.17306
+        B = 0.784098
+        C = 0.878646
+        expected_hi1 = -2.03111
+
+        self.assertAlmostEqual(expected_hi1,
+                               helpers.calc_hi1(A, B, C),
+                               5)
+
+    def test_calc_h21(self):
+        A = 0.17306
+        B = 0.784098
+        C = 0.878646
+        expected_hi2 = -2.49968
+
+        self.assertAlmostEqual(expected_hi2,
+                               helpers.calc_hi2(A, B, C),
+                               5)
 
     # TODO(hrybacki)
     def test_genererate_lookup_table(self):

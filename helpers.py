@@ -74,7 +74,7 @@ def generate_differences(dictionary):
 
 def standardize_readings(sensor_readings):
     """Standardize sensor readings
-    
+
     :param dictionary: dictionary of sensors whose readings need to be normalized
     :return: dictionary mapping sensors to normalized lists of temp .and humidity readings
     """
@@ -167,8 +167,9 @@ def calculate_ellipsoid_orientation(sensor_readings):
     print "Part four: %s" % part_four_value
     print "tan(theta) = %s" % tan_theta
     """
-    return math.atan(tan_theta)
-
+    #return math.atan(tan_theta)
+    # @FIXME(hrybacki): Dr. Shan want's this to be absolute value. Do we need that? WHy?
+    return math.fabs(math.atan(tan_theta))
 
 def calculate_humidity_mean(sensor_readings):
     """Calculates the mean humidity of a given sensors list of readings
@@ -212,6 +213,111 @@ def get_min_max_temp(sensor_readings):
             max_temp = reading[0]
 
     return (int(min_temp), int(max_temp))
+
+def calc_A(a, b, theta):
+    """ Returns the A value used in ellipsoid boundary modeling
+
+    :param a: represents the major axis of the ellipsoid
+    :param b: represents the mini axis os the ellipsoid
+    :param theta: represents the orientation of the raw measurements
+    :return: A value used in ellipsoid boundary modeling
+    """
+    A = (math.pow(math.sin(theta), 2) / math.pow(a, 2)) + (math.pow(math.cos(theta), 2) / math.pow(b, 2))
+
+    return A
+
+def calc_B(a, b, ti, theta):
+    """ Returns the B value used in ellipsoid boundary modeling
+
+    :param a: represents the major axis of the ellipsoid
+    :param b: represents the mini axis os the ellipsoid
+    :param ti: temperature (independent variable) used in calculation
+    :param theta: represents the orientation of the raw measurements
+    :return: B value used in ellipsoid boundary modeling
+    """
+    B = ((1/math.pow(a, 2)) - (1/math.pow(b, 2))) * ti * math.sin(2*theta)
+
+    return B
+
+def calc_C(a, b, ti, theta):
+    """ Returns the C value used in ellipsoid boundary modeling
+
+    :param a: represents the major axis of the ellipsoid
+    :param b: represents the mini axis os the ellipsoid
+    :param ti: temperature (independent variable) used in calculation
+    :param theta: represents the orientation of the raw measurements
+    :return: C value used in ellipsoid boundary modeling
+    """
+    C = ((math.pow(ti, 2) * math.pow(math.cos(theta), 2)) / math.pow(a, 2)) + \
+        ((math.pow(ti, 2) * math.pow(math.sin(theta), 2)) / math.pow(b, 2)) - 1
+
+    return C
+
+def calc_hi1(A, B, C):
+    """ Calculates the upper point for a given temp modeling an ellipsoid
+
+    :param A: A value used in ellipsoid boundary modeling
+    :param B: B value used in ellipsoid boundary modeling
+    :param C: C value used in ellipsoid boundary modeling
+    :return: Upper point for given temperature
+    """
+    try:
+        return (-B + math.sqrt(math.pow(B, 2) - (4*A*C))) / (2*A)
+    except ValueError:
+        pass # skip domain errors
+
+def calc_hi2(A, B, C):
+    """ Calculates the lower point for a given temp modeling an ellipsoid
+
+    :param A: A value used in ellipsoid boundary modeling
+    :param B: B value used in ellipsoid boundary modeling
+    :param C: C value used in ellipsoid boundary modeling
+    :return: Lower point for given temperature
+    """
+    try:
+        return (-B - math.sqrt(math.pow(B, 2) - (4*A*C))) / (2*A)
+    except ValueError:
+        pass # ignore domain errors
+
+def generate_ellipsoid(sensor_readings, a, b):
+    """Calculates points representing an ellipsoid for a given a and b
+    over a set of sensor readings.
+
+    :param sensor_readings: list of tuples representing sensor readings
+    :param a: a parameter used in calculating ellipsoid parameters
+    :param b: b parameter used in calculating ellipsoid parameters
+    :return: ellipsoid_parameters: dictionary containing parameters used in creation of
+    as well as results from modeling ellipsoid boundaries
+    """
+    theta = calculate_ellipsoid_orientation(sensor_readings)
+    A = calc_A(a, b, theta) # A is independent of the temperatures
+
+    ellipsoid_parameters = {
+        'a': a,
+        'b': b,
+        'theta': theta,
+        'original_sensor_readings': sensor_readings,
+        'ellipsoid_points': []
+    }
+
+    for reading in sensor_readings:
+        #print "Temp: %s" % temp
+        B = calc_B(a, b, reading[0], theta)
+        C = calc_C(a, b, reading[0], theta)
+        hi1 = calc_hi1(A, B, C)
+        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi1))
+        hi2 = calc_hi2(A, B, C)
+        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi2))
+
+    return ellipsoid_parameters
+
+
+
+
+
+
+
+
 
 def model_ellipsoid(sensor_data):
     """Generates and returns a three tuple of ellipsoid parameter for a single sensor
