@@ -78,16 +78,11 @@ class testHelpers(unittest.TestCase):
         assert True
 
 
-    #def test_calculate_temp_mean(self):
+    def test_calculate_temp_mean(self):
 
-    #    expected_mean = (19 / 4)
+        expected_mean = (12 / 4)
 
-    #    assert helpers.calculate_temp_mean(self.original_dict['1']) == expected_mean
-
-
-    def test_calculate_mean(self):
-
-        assert helpers.calculate_mean([1, 2, 3]) == 2.0
+        assert helpers.calculate_temp_mean(self.original_dict['1']) == expected_mean
 
     def test_calculate_std_dev(self):
 

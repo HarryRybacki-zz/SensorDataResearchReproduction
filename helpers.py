@@ -81,22 +81,12 @@ def standardize_readings(sensor_readings):
     :return: dictionary mapping sensors to normalized lists of temp .and humidity readings
     """
     for sensor, readings in sensor_readings.iteritems():
-
-        temp_readings = [reading[0] for reading in readings]
-        humidity_readings = [reading[1] for reading in readings]
-
-        print "Sensor %s: " % sensor
-
-        temp_mean = calculate_mean(temp_readings)
-        humidity_mean = calculate_mean(humidity_readings)
-
-        print "Temp mean: %s, Humidity mean: %s" % (temp_mean, humidity_mean)
-
-
-        temp_sd, humidity_sd = calculate_std_dev(readings)
-
-        print "Temp sd: %s, Humidity sd: %s" % (temp_sd, humidity_sd)
-
+        # Calculate temperature and humidity means
+        temp_mean = numpy.mean([reading[0] for reading in readings])
+        humidity_mean = numpy.mean([reading[1] for reading in readings])
+        # Calculate tempeature and humidity standard deviations
+        temp_sd = numpy.std([reading[0] for reading in readings])
+        humidity_sd = numpy.std([reading[0] for reading in readings])
 
         standardized_readings = []
 
@@ -110,17 +100,35 @@ def standardize_readings(sensor_readings):
     return sensor_readings
 
 """Begin ellipsoid modeling functions"""
-def generate_ellipsoid(sensor_readings, a, b):
+def generate_regional_ellipsoid_parameters(sensors_ellipsoid_parameters):
+    """ Generates the aggregate ellipsoid parameters from a list of ellipsoids
+     within a region
+
+    :param ellipsoid_parameters: list of dictionaries representing ellipsoid
+    parameters from individual sensors
+    :return: dictionary representing the aggregate ellipsoid parameters for a
+    given region
+    """
+    num_of_ellipsoids = len(sensors_ellipsoid_parameters)
+    ave_a = sum([sensors_ellipsoid_parameters[ellipsoid]['a'] for ellipsoid in sensors_ellipsoid_parameters]) / num_of_ellipsoids
+    ave_b = sum([sensors_ellipsoid_parameters[ellipsoid]['b'] for ellipsoid in sensors_ellipsoid_parameters]) / num_of_ellipsoids
+    ave_theta = sum([sensors_ellipsoid_parameters[ellipsoid]['theta'] for ellipsoid in sensors_ellipsoid_parameters]) / num_of_ellipsoids
+
+    return (ave_a, ave_b, ave_theta)
+
+def generate_ellipsoid(sensor_readings, a, b, theta=None):
     """Calculates points representing an ellipsoid for a given a and b
     over a set of sensor readings.
 
     :param sensor_readings: list of tuples representing sensor readings
     :param a: a parameter used in calculating ellipsoid parameters
     :param b: b parameter used in calculating ellipsoid parameters
+    :param theta: optional hardcoded theta value
     :return: ellipsoid_parameters: dictionary containing parameters used in creation of
     as well as results from modeling ellipsoid boundaries
     """
-    theta = calculate_ellipsoid_orientation(sensor_readings)
+    if theta is None:
+        theta = calculate_ellipsoid_orientation(sensor_readings)
     A = calc_A(a, b, theta) # A is independent of the temperatures
 
     ellipsoid_parameters = {
@@ -241,24 +249,9 @@ def calc_hi2(A, B, C):
 
 
 """Begin misc. functions"""
-def calculate_mean(list):
-    """Calculate the mean of a list of numbers"""
-    return sum(list) * 1.0 / len(list)
-
-def calculate_std_dev(sensor_readings):
-    """
-    :param list: list of tuples representing sensor readings (temp., humidity)
-    :return: tuple of population std. dev. (sd of temp, sd of humidity)
-    """
-    temperature_readings = [reading[0] for reading in sensor_readings]
-    humidity_readings = [reading[1] for reading in sensor_readings]
-
-    return (numpy.std(temperature_readings), numpy.std(humidity_readings))
-
 # FIXME: Are we picking the correct values here? Why are the sigmas
 # FIXME: 'swapped' in the calculations?
 # FIXME: Flip the h's and t's
-
 def calculate_dist(point_one, point_two, sigma_one, sigma_two):
     """ Calculates the distance between two points
     d(pi, pj) = (h1-h2)^2*sigma_one+(t1-t2)^2*sigma_two + 2*(h1-h2)(t1-t2)*sigma_one*sigma_two
@@ -280,12 +273,7 @@ def calculate_humidity_mean(sensor_readings):
     :return: mean
     """
 
-    total_count = 0
-
-    for index, reading in enumerate(sensor_readings):
-        total_count = total_count + reading[1] # humidity portion of tuple
-
-    return total_count / len(sensor_readings)
+    return numpy.mean([reading[1] for reading in sensor_readings])
 
 def calculate_temp_mean(sensor_readings):
     """Calculates the mean temp. of a given sensors list of readings
@@ -294,12 +282,7 @@ def calculate_temp_mean(sensor_readings):
     :return: mean
     """
 
-    total_count = 0
-
-    for index, reading in enumerate(sensor_readings):
-        total_count = total_count + reading[0] # temp. portion of tuple
-
-    return total_count / len(sensor_readings)
+    return numpy.mean([reading[0] for reading in sensor_readings])
 
 """Begin incomplete functions"""
 def model_ellipsoid(sensor_data):
@@ -307,14 +290,6 @@ def model_ellipsoid(sensor_data):
 
     :param sensor_data: Dictionary mapping a sensor to it's normalized readings
     :return: 3-tuple with ellipsoid parameters
-    """
-    pass
-
-def model_region_ellipsoid(sensor_ellipsoids):
-    """Generates and returns a three tuple of ellipsoid parameter aggregate
-
-    :param sensor_data: Dictionary mapping sensors to their respective ellipsoids
-    :return: 3-tuple with ellipsoid aggregate parameters
     """
     pass
 
