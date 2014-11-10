@@ -3,6 +3,7 @@ import math
 
 """Helper classes."""
 
+"""Begin data input functions"""
 def read_ibrl_data(data_file):
     """Reads IBRL data from file and returns dict mapping
     temp./humidity sensor data to the node that collected them
@@ -35,6 +36,7 @@ def read_ibrl_data(data_file):
         print "Total incomplete rows: %s" % bad_count
     return measurements
 
+"""Begin data transformation functions"""
 def randomize_readings(dictionary):
     """For each list mapped to a sensor, randomize the tuples within and returns the resulting dictionary
 
@@ -79,13 +81,22 @@ def standardize_readings(sensor_readings):
     :return: dictionary mapping sensors to normalized lists of temp .and humidity readings
     """
     for sensor, readings in sensor_readings.iteritems():
+
         temp_readings = [reading[0] for reading in readings]
         humidity_readings = [reading[1] for reading in readings]
+
+        print "Sensor %s: " % sensor
 
         temp_mean = calculate_mean(temp_readings)
         humidity_mean = calculate_mean(humidity_readings)
 
+        print "Temp mean: %s, Humidity mean: %s" % (temp_mean, humidity_mean)
+
+
         temp_sd, humidity_sd = calculate_std_dev(readings)
+
+        print "Temp sd: %s, Humidity sd: %s" % (temp_sd, humidity_sd)
+
 
         standardized_readings = []
 
@@ -98,36 +109,38 @@ def standardize_readings(sensor_readings):
 
     return sensor_readings
 
-def calculate_mean(list):
-    """Calculate the mean of a list of numbers"""
-    return sum(list) * 1.0 / len(list)
+"""Begin ellipsoid modeling functions"""
+def generate_ellipsoid(sensor_readings, a, b):
+    """Calculates points representing an ellipsoid for a given a and b
+    over a set of sensor readings.
 
-def calculate_std_dev(sensor_readings):
+    :param sensor_readings: list of tuples representing sensor readings
+    :param a: a parameter used in calculating ellipsoid parameters
+    :param b: b parameter used in calculating ellipsoid parameters
+    :return: ellipsoid_parameters: dictionary containing parameters used in creation of
+    as well as results from modeling ellipsoid boundaries
     """
-    :param list: list of tuples representing sensor readings (temp., humidity)
-    :return: tuple of population std. dev. (sd of temp, sd of humidity)
-    """
-    temperature_readings = [reading[0] for reading in sensor_readings]
-    humidity_readings = [reading[1] for reading in sensor_readings]
+    theta = calculate_ellipsoid_orientation(sensor_readings)
+    A = calc_A(a, b, theta) # A is independent of the temperatures
 
-    return (numpy.std(temperature_readings), numpy.std(humidity_readings))
+    ellipsoid_parameters = {
+        'a': a,
+        'b': b,
+        'theta': theta,
+        'original_sensor_readings': sensor_readings,
+        'ellipsoid_points': []
+    }
 
-# FIXME: Are we picking the correct values here? Why are the sigmas
-# FIXME: 'swapped' in the calculations?
-# FIXME: Flip the h's and t's
-def calculate_dist(point_one, point_two, sigma_one, sigma_two):
-    """ Calculates the distance between two points
-    d(pi, pj) = (h1-h2)^2*sigma_one+(t1-t2)^2*sigma_two + 2*(h1-h2)(t1-t2)*sigma_one*sigma_two
-    :param point_one: first tuple (temp., humidity)
-    :param point_two: second tuple (temp., humidity)
-    :param sigma_one: std. dev. of temperature readings
-    :param sigma_two: std. dev. of humidity readings
-    :return: distance
-    """
-    t1, h1 = point_one
-    t2, h2 = point_two
+    for reading in sensor_readings:
+        #print "Temp: %s" % temp
+        B = calc_B(a, b, reading[0], theta)
+        C = calc_C(a, b, reading[0], theta)
+        hi1 = calc_hi1(A, B, C)
+        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi1))
+        hi2 = calc_hi2(A, B, C)
+        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi2))
 
-    return math.fabs(math.pow(h1-h2, 2)*sigma_one + math.pow(t1-t2, 2)*sigma_two + 2*(h1-h2)*(t1-t2)*sigma_one*sigma_two)
+    return ellipsoid_parameters
 
 def calculate_ellipsoid_orientation(sensor_readings):
     """
@@ -140,7 +153,6 @@ def calculate_ellipsoid_orientation(sensor_readings):
     humidity_readings = [reading[1] for reading in sensor_readings]
 
     #FIXME(hrybacki): Come up with a better way of breaking this components down
-    #FIXME(hrybacki): Shouldwe be getting negative values anywhere in here?
 
     # part_one
     part_one_multiplicands = [temperature_readings[i]*humidity_readings[i] for i in range(n)]
@@ -157,62 +169,10 @@ def calculate_ellipsoid_orientation(sensor_readings):
 
     # arctan(theta)
     tan_theta = (part_one_value - part_two_value) / (part_three_value - part_four_value)
-    """
-    print "Temp. readings: %s" % temperature_readings
-    print "Humidity readings: %s" % humidity_readings
 
-    print "Part one: %s" % part_one_value
-    print "Part two: %s" % part_two_value
-    print "Part three: %s" % part_three_value
-    print "Part four: %s" % part_four_value
-    print "tan(theta) = %s" % tan_theta
-    """
     #return math.atan(tan_theta)
     # @FIXME(hrybacki): Dr. Shan want's this to be absolute value. Do we need that? WHy?
     return math.fabs(math.atan(tan_theta))
-
-def calculate_humidity_mean(sensor_readings):
-    """Calculates the mean humidity of a given sensors list of readings
-
-    :param list: list of tuples representing sensor readings (temp., humidity)
-    :return: mean
-    """
-
-    total_count = 0
-
-    for index, reading in enumerate(sensor_readings):
-        total_count = total_count + reading[0] # humidity portion of tuple
-
-    return total_count / len(sensor_readings)
-
-def calculate_temp_mean(sensor_readings):
-    """Calculates the mean temp. of a given sensors list of readings
-
-    :param list: list of tuples representing sensor readings (humidity, temp.)
-    :return: mean
-    """
-
-    total_count = 0
-
-    for index, reading in enumerate(sensor_readings):
-        total_count = total_count + reading[1] # temp. portion of tuple
-
-    return total_count / len(sensor_readings)
-
-def get_min_max_temp(sensor_readings):
-    """
-    :param sensor_readings: list of tuples representing temp and humidity readings
-    :return: tuple of the minimum and maximum temps from a list of readings
-    """
-    min_temp = 999
-    max_temp = -999
-    for reading in sensor_readings:
-        if reading[0] < min_temp:
-            min_temp = reading[0]
-        elif reading[0] > max_temp:
-            max_temp = reading[0]
-
-    return (int(min_temp), int(max_temp))
 
 def calc_A(a, b, theta):
     """ Returns the A value used in ellipsoid boundary modeling
@@ -279,46 +239,69 @@ def calc_hi2(A, B, C):
     except ValueError:
         pass # ignore domain errors
 
-def generate_ellipsoid(sensor_readings, a, b):
-    """Calculates points representing an ellipsoid for a given a and b
-    over a set of sensor readings.
 
-    :param sensor_readings: list of tuples representing sensor readings
-    :param a: a parameter used in calculating ellipsoid parameters
-    :param b: b parameter used in calculating ellipsoid parameters
-    :return: ellipsoid_parameters: dictionary containing parameters used in creation of
-    as well as results from modeling ellipsoid boundaries
+"""Begin misc. functions"""
+def calculate_mean(list):
+    """Calculate the mean of a list of numbers"""
+    return sum(list) * 1.0 / len(list)
+
+def calculate_std_dev(sensor_readings):
     """
-    theta = calculate_ellipsoid_orientation(sensor_readings)
-    A = calc_A(a, b, theta) # A is independent of the temperatures
+    :param list: list of tuples representing sensor readings (temp., humidity)
+    :return: tuple of population std. dev. (sd of temp, sd of humidity)
+    """
+    temperature_readings = [reading[0] for reading in sensor_readings]
+    humidity_readings = [reading[1] for reading in sensor_readings]
 
-    ellipsoid_parameters = {
-        'a': a,
-        'b': b,
-        'theta': theta,
-        'original_sensor_readings': sensor_readings,
-        'ellipsoid_points': []
-    }
+    return (numpy.std(temperature_readings), numpy.std(humidity_readings))
 
-    for reading in sensor_readings:
-        #print "Temp: %s" % temp
-        B = calc_B(a, b, reading[0], theta)
-        C = calc_C(a, b, reading[0], theta)
-        hi1 = calc_hi1(A, B, C)
-        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi1))
-        hi2 = calc_hi2(A, B, C)
-        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi2))
+# FIXME: Are we picking the correct values here? Why are the sigmas
+# FIXME: 'swapped' in the calculations?
+# FIXME: Flip the h's and t's
 
-    return ellipsoid_parameters
+def calculate_dist(point_one, point_two, sigma_one, sigma_two):
+    """ Calculates the distance between two points
+    d(pi, pj) = (h1-h2)^2*sigma_one+(t1-t2)^2*sigma_two + 2*(h1-h2)(t1-t2)*sigma_one*sigma_two
+    :param point_one: first tuple (temp., humidity)
+    :param point_two: second tuple (temp., humidity)
+    :param sigma_one: std. dev. of temperature readings
+    :param sigma_two: std. dev. of humidity readings
+    :return: distance
+    """
+    t1, h1 = point_one
+    t2, h2 = point_two
 
+    return math.fabs(math.pow(h1-h2, 2)*sigma_one + math.pow(t1-t2, 2)*sigma_two + 2*(h1-h2)*(t1-t2)*sigma_one*sigma_two)
 
+def calculate_humidity_mean(sensor_readings):
+    """Calculates the mean humidity of a given sensors list of readings
 
+    :param list: list of tuples representing sensor readings (temp., humidity)
+    :return: mean
+    """
 
+    total_count = 0
 
+    for index, reading in enumerate(sensor_readings):
+        total_count = total_count + reading[1] # humidity portion of tuple
 
+    return total_count / len(sensor_readings)
 
+def calculate_temp_mean(sensor_readings):
+    """Calculates the mean temp. of a given sensors list of readings
 
+    :param list: list of tuples representing sensor readings (humidity, temp.)
+    :return: mean
+    """
 
+    total_count = 0
+
+    for index, reading in enumerate(sensor_readings):
+        total_count = total_count + reading[0] # temp. portion of tuple
+
+    return total_count / len(sensor_readings)
+
+"""Begin incomplete functions"""
 def model_ellipsoid(sensor_data):
     """Generates and returns a three tuple of ellipsoid parameter for a single sensor
 
