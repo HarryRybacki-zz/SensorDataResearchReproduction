@@ -1,8 +1,17 @@
+""" This file contains the baseline functions for detecting anomalies from
+sensor data using the ellipsoid boundary modeling techniques outlined by
+Dr. Suthaharan et al. They are accessible via the IPython notebook
+at the root of the repository and can be interchanged with custom functions
+for exploratory analysis of the algorithm(s)
+
+These baseline functions can be replaced with other ellipsoid boundary
+modeling techniques to work with the respective IPython notebook.
+"""
+
 import math
 import numpy
 import random
 
-"""Helper classes."""
 
 """Begin data input functions"""
 def read_ibrl_data(data_file):
@@ -15,7 +24,7 @@ def read_ibrl_data(data_file):
     with open(data_file, 'r') as fp:
         row_count = 0
         bad_count = 0
-        measurements = {}
+        input_readings = {}
         for line in fp:
 
             row_count = row_count + 1
@@ -23,82 +32,94 @@ def read_ibrl_data(data_file):
             tokens = line.split(',') # segregate each section
 
             try:
-                if len(tokens) != 5: # dump incomplete sensor readings
+                if len(tokens) == 5: #
+                    temp_reading = tokens[0]
+                    humidity_reading = tokens[1]
+                    sensor_id = tokens[3]
+
+                    # if sensor id is in the input_readings dict
+                    if sensor_id in input_readings:
+                        # add the temp and humidity values
+                        input_readings[sensor_id]['temp_readings'].append(temp_reading)
+                        input_readings[sensor_id]['humidity_readings'].append(humidity_reading)
+                    else:
+                        # add the sensor id and new temp and humidity values
+                        input_readings[sensor_id] = {
+                            'temp_readings': [tokens[0]],
+                            'humidity_readings': [tokens[1]]
+                        }
+                else: # Note and dump bad data
                     bad_count = bad_count + 1
-                elif tokens[3] in measurements: # if sensor id is in the sensor dict
-                    # append new temp/humidity tuple
-                    measurements[tokens[3]].append((float(tokens[0]), float(tokens[1])))
-                else:
-                    # else create a new entry in sensor_dict and add it's respective sensor data
-                    measurements[tokens[3]] = [(float(tokens[0]), float(tokens[1]))]
+
             except Exception as e:
                 raise e
+
+        # Convert data points to numpy arrays
+        measurements = {sensor: numpy.array([readings['temp_readings'], readings['humidity_readings']], float)
+                        for (sensor, readings) in input_readings.iteritems()}
+
         print "Total rows: %s" % row_count
         print "Total incomplete rows: %s" % bad_count
+
     return measurements
 
 """Begin data transformation functions"""
-def randomize_readings(dictionary):
-    """For each list mapped to a sensor, randomize the tuples within and returns the resulting dictionary
+def randomize_readings(sensors):
+    """ Pseudo randomly shuffles location of each pair of temperature and
+    humidity observations
 
-    :param dictionary: Dictionary of sensors whose lists will be shuffled
-    :return: Dictionary mapping sensors to randomized lists of temp. and humidity readings
+    :param sensors: Dictionary of sensors containing temp. and humidity readings
+    :return: Dictionary of sensors containing shuffled temp. and humid. readings
     """
-    import random
-    for sensor in dictionary:
-        random.shuffle(dictionary[sensor])
+    for sensor in sensors:
+        tuples = [(sensors[sensor][0][i],sensors[sensor][1][i])
+                  for i in range(len(sensors[sensor][0]))]
+        random.shuffle(tuples)
+        sensors[sensor] = numpy.array([[reading[0] for reading in tuples], [reading[1] for reading in tuples]], float)
 
-    return dictionary
+    return sensors
 
-def generate_differences(dictionary):
-    """Generates a dictionary that maps each sensor to a list of length n and containing tuples of temp. and humidity
-    data to a new list of tuples size n-1 where each tuple is the difference between the original list at index n+1 and
-    the original list at index n
+def generate_differences(sensors):
+    """Generates a dictionary mapping sensors to a 2D array containing
+    the successive differences of temp. and humidity measurements as well as
+    a look up table mapping the resulting differences to their original
+    measurements.
 
-    :param dictionary: dictionary mapping sensors to original tuples of temp. and humidity data.
-    :return: tuple containing dictionary mapping sensors to new list of tuple differences and a lookup table containing
-    back references to the raw measurements used to calculate the new measurements in the differences dict
+    :param sensor: Dictionary mapping sensors to original arrays of temp.
+       and humidity readings
+    :return: tuple containing dictionary mapping sensors to successive
+       differences and look up table mapping the results to their original
+       measurements
     """
     differences = {}
     lookup_table = {}
 
-    for sensor in dictionary:
-        for index in range(len(dictionary[sensor]) - 1):
-            difference_tuple =  (
-                dictionary[sensor][index + 1][0] - dictionary[sensor][index][0],
-                dictionary[sensor][index + 1][1] - dictionary[sensor][index][1]
-            )
-            if sensor in differences:
-                differences[sensor].append(difference_tuple)
-            else:
-                differences[sensor] = [difference_tuple]
+    for sensor in sensors:
+        differences[sensor] = calc_succ_diff(sensors[sensor])
 
     return (differences, lookup_table)
 
-def standardize_readings(sensor_readings):
-    """Standardize sensor readings
+def calc_succ_diff(sensor):
+    """ Calculates the successive differences of for a given sensor
 
-    :param dictionary: dictionary of sensors whose readings need to be normalized
-    :return: dictionary mapping sensors to normalized lists of temp .and humidity readings
+    :param sensor: Sensor to be operated on
+    :return: numpy array of successive differences
     """
-    for sensor, readings in sensor_readings.iteritems():
-        # Calculate temperature and humidity means
-        temp_mean = numpy.mean([reading[0] for reading in readings])
-        humidity_mean = numpy.mean([reading[1] for reading in readings])
-        # Calculate tempeature and humidity standard deviations
-        temp_sd = numpy.std([reading[0] for reading in readings])
-        humidity_sd = numpy.std([reading[0] for reading in readings])
+    sensor = [
+        successive_diff(sensor[0]),
+        successive_diff(sensor[1])
+    ]
 
-        standardized_readings = []
+    return numpy.array(sensor, float)
 
-        for reading in readings:
-            standardized_readings.append(
-                (((reading[0] - temp_mean) / temp_sd),
-                 ((reading[1] - humidity_mean) / humidity_sd)))
+def successive_diff(array):
+    """ Calculates the successive differences for an array
 
-        sensor_readings[sensor] = standardized_readings
+    :param array: Array to be operated on
+    :return: Array of resulting successive differences
+    """
 
-    return sensor_readings
+    return [array[i+1] - array[i] for i in range(len(array) - 1)]
 
 """Begin ellipsoid modeling functions"""
 def generate_regional_ellipsoid_parameters(sensors_ellipsoid_parameters):
@@ -117,11 +138,11 @@ def generate_regional_ellipsoid_parameters(sensors_ellipsoid_parameters):
 
     return (ave_a, ave_b, ave_theta)
 
-def generate_ellipsoid(sensor_readings, a, b, theta=None):
-    """Calculates points representing an ellipsoid for a given a and b
-    over a set of sensor readings.
+def generate_ellipsoid(sensor, a, b, theta=None):
+    """ Calculates points representing an ellipsoid for a given a and b
+    over from sensor readings.
 
-    :param sensor_readings: list of tuples representing sensor readings
+    :param sensor: sensor mapped to a 2D array of temp. and humidity readings
     :param a: a parameter used in calculating ellipsoid parameters
     :param b: b parameter used in calculating ellipsoid parameters
     :param theta: optional hardcoded theta value
@@ -129,37 +150,35 @@ def generate_ellipsoid(sensor_readings, a, b, theta=None):
     as well as results from modeling ellipsoid boundaries
     """
     if theta is None:
-        theta = calculate_ellipsoid_orientation(sensor_readings)
+        theta = calculate_ellipsoid_orientation(sensor)
     A = calc_A(a, b, theta) # A is independent of the temperatures
 
     ellipsoid_parameters = {
         'a': a,
         'b': b,
         'theta': theta,
-        'original_sensor_readings': sensor_readings,
+        'original_sensor_readings': sensor,
         'ellipsoid_points': []
     }
 
-    for reading in sensor_readings:
-        #print "Temp: %s" % temp
-        B = calc_B(a, b, reading[0], theta)
-        C = calc_C(a, b, reading[0], theta)
+    for temp_reading in sensor[0]:
+        B = calc_B(a, b, temp_reading, theta)
+        C = calc_C(a, b, temp_reading, theta)
         hi1 = calc_hi1(A, B, C)
-        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi1))
+        ellipsoid_parameters['ellipsoid_points'].append((temp_reading, hi1))
         hi2 = calc_hi2(A, B, C)
-        ellipsoid_parameters['ellipsoid_points'].append((reading[0], hi2))
+        ellipsoid_parameters['ellipsoid_points'].append((temp_reading, hi2))
 
     return ellipsoid_parameters
 
-def calculate_ellipsoid_orientation(sensor_readings):
-    """
-    :param sensor_readings: list of tuples (temp., humidity) representing readings
+def calculate_ellipsoid_orientation(sensor):
+    """ Calculates the orientation of raw sensor data points
+    :param sensor: sensor mapped to a 2D array of temp. and humidity readings
     :return: float, theta of ellipsoid orientation
     """
-
-    n = len(sensor_readings)
-    temperature_readings = [reading[0] for reading in sensor_readings]
-    humidity_readings = [reading[1] for reading in sensor_readings]
+    n = len(sensor[0])
+    temperature_readings = sensor[0]
+    humidity_readings = sensor[1]
 
     #FIXME(hrybacki): Come up with a better way of breaking this components down
 
@@ -180,9 +199,10 @@ def calculate_ellipsoid_orientation(sensor_readings):
     tan_theta = (part_one_value - part_two_value) / (part_three_value - part_four_value)
 
     #return math.atan(tan_theta)
-    # @FIXME(hrybacki): Dr. Shan want's this to be absolute value. Do we need that? WHy?
+    # @FIXME(hrybacki): Dr. Shan want's this to be absolute value. Do we need that? Why?
     #return math.fabs(math.atan(tan_theta))
     return math.atan(tan_theta)
+
 
 def calc_A(a, b, theta):
     """ Returns the A value used in ellipsoid boundary modeling
@@ -249,52 +269,7 @@ def calc_hi2(A, B, C):
     except ValueError:
         pass # ignore domain errors
 
-
-"""Begin misc. functions"""
-# FIXME: Are we picking the correct values here? Why are the sigmas
-# FIXME: 'swapped' in the calculations?
-# FIXME: Flip the h's and t's
-def calculate_dist(point_one, point_two, sigma_one, sigma_two):
-    """ Calculates the distance between two points
-    d(pi, pj) = (h1-h2)^2*sigma_one+(t1-t2)^2*sigma_two + 2*(h1-h2)(t1-t2)*sigma_one*sigma_two
-    :param point_one: first tuple (temp., humidity)
-    :param point_two: second tuple (temp., humidity)
-    :param sigma_one: std. dev. of temperature readings
-    :param sigma_two: std. dev. of humidity readings
-    :return: distance
-    """
-    t1, h1 = point_one
-    t2, h2 = point_two
-
-    return math.fabs(math.pow(h1-h2, 2)*sigma_one + math.pow(t1-t2, 2)*sigma_two + 2*(h1-h2)*(t1-t2)*sigma_one*sigma_two)
-
-def calculate_humidity_mean(sensor_readings):
-    """Calculates the mean humidity of a given sensors list of readings
-
-    :param list: list of tuples representing sensor readings (temp., humidity)
-    :return: mean
-    """
-
-    return numpy.mean([reading[1] for reading in sensor_readings])
-
-def calculate_temp_mean(sensor_readings):
-    """Calculates the mean temp. of a given sensors list of readings
-
-    :param list: list of tuples representing sensor readings (humidity, temp.)
-    :return: mean
-    """
-
-    return numpy.mean([reading[0] for reading in sensor_readings])
-
 """Begin incomplete functions"""
-def model_ellipsoid(sensor_data):
-    """Generates and returns a three tuple of ellipsoid parameter for a single sensor
-
-    :param sensor_data: Dictionary mapping a sensor to it's normalized readings
-    :return: 3-tuple with ellipsoid parameters
-    """
-    pass
-
 def inverse_transformation(lookup_table, aggregate_ellipsoid):
     """ Generates a tuple of two dicts mapping sensors to anomalies and true measurements
 
@@ -303,17 +278,7 @@ def inverse_transformation(lookup_table, aggregate_ellipsoid):
     :return: tuple containing two dicts, one of true measurements and another of anomalies
     each mapped to their original sensors
     """
-    true_measurements = {}
-    anomalies = {}
-
-    for sensor in lookup_table:
-        for reading in sensor:
-            if is_anomaly(reading):
-                anomalies[sensor] = reading
-            else:
-                true_measurements[sensor] = reading
-
-    return (true_measurements, anomalies)
+    pass
 
 def is_anomaly(reading, aggregate_ellipsoid):
     """ Determines if reading is anomaly with respect to an ellipsoid
